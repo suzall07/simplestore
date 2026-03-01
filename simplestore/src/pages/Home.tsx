@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { fetchCategories, fetchTrendingProducts } from "../api";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 
-type Category = { id: string; name: string; icon: string; };
+type Category = { id: string; name: string; };
 type Product = {
   id: number;
   title: string;
@@ -40,152 +40,73 @@ const Home = () => {
   if (loading) return <LoadingSpinner />;
 
   if (error) return (
-    <div style={{ textAlign: "center", padding: "4rem" }}>
+    <div className="text-center p-16">
       <p>{error}</p>
-      <button onClick={() => window.location.reload()} className="btn btn-primary">
+      <button onClick={() => window.location.reload()} className="btn btn-primary mt-4">
         Retry
       </button>
     </div>
   );
 
   return (
-    <div>
-      {/* HERO */}
-      <section className="hero">
-        <div className="hero-content">
-          <div className="hero-tag">
-            <span className="hero-tag-dot" />
-            New arrivals every week
-          </div>
-          <h1 className="hero-title">
-            Shop Smart.<br />Live <span>Better.</span>
-          </h1>
-          <p className="hero-desc">
-            Discover thousands of products across electronics, fashion, and jewelry.
-          </p>
-          <div className="hero-cta">
-            <Link to="/products" className="btn btn-primary btn-lg">Browse Products</Link>
-            <Link to="/products?category=electronics" className="btn btn-outline btn-lg">What's New</Link>
-          </div>
-          <div className="hero-stats">
-            <div>
-              <div className="stat-num">20+</div>
-              <div className="stat-label">Products</div>
-            </div>
-            <div>
-              <div className="stat-num">4</div>
-              <div className="stat-label">Categories</div>
-            </div>
-            <div>
-              <div className="stat-num">4.5</div>
-              <div className="stat-label">Avg Rating</div>
-            </div>
-          </div>
+    <div className="overflow-x-hidden bg-white">
+      {/* HERO - Minimalist & Centered */}
+      <section className="max-w-[800px] mx-auto px-8 pt-32 pb-20 text-center">
+        <h1 className="font-display text-5xl md:text-7xl leading-tight tracking-tight mb-8 text-[#111111]">
+          Essential goods for <br />
+          <span className="italic font-light">intentional living.</span>
+        </h1>
+        <p className="text-text-muted text-lg max-w-[500px] mx-auto mb-12 leading-relaxed font-light">
+          A curated selection of quality products across electronics, fashion, and jewelry.
+        </p>
+        <div className="flex justify-center gap-4">
+          <Link to="/products" className="btn btn-primary btn-lg">Shop All</Link>
+          <Link to="/products?category=electronics" className="btn btn-outline btn-lg">New Arrivals</Link>
         </div>
+      </section>
 
-        <div className="hero-visual" aria-hidden="true">
-          <div className="hero-img-grid">
-            <div className="hero-img-card" style={{ background: "#e8f4fd" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: "6rem" }}>
-                {categories.find(c => c.id === "electronics")?.icon}
-              </div>
-              <div className="hero-badge">Electronics</div>
-            </div>
-            <div className="hero-img-card" style={{ background: "#fde8f0" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: "4rem" }}>
-                {categories.find(c => c.id === "women's clothing")?.icon}
-              </div>
-              <div className="hero-badge hero-badge-accent">New!</div>
-            </div>
-            <div className="hero-img-card" style={{ background: "#fdf4e8" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: "4rem" }}>
-                {categories.find(c => c.id === "jewelery")?.icon}
-              </div>
-              <div className="hero-badge">Jewelry</div>
-            </div>
+      {/* CATEGORIES - Clean & Horizontal */}
+      <section className="max-w-[1280px] mx-auto px-8 py-20 border-t border-border-custom">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <h2 className="font-display text-2xl tracking-tight">Categories</h2>
+          <div className="flex flex-wrap gap-x-8 gap-y-4">
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                to={`/products?category=${encodeURIComponent(cat.id)}`}
+                className="text-sm uppercase tracking-widest text-text-muted hover:text-[#111111] transition-colors"
+              >
+                {cat.name}
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CATEGORIES */}
-      <section className="categories-section">
-        <div className="section-header">
-          <h2 className="section-title">Shop by Category</h2>
-          <Link to="/products" className="section-link">View all</Link>
+      {/* TRENDING - Clean Grid */}
+      <section className="max-w-[1280px] mx-auto px-8 py-24 border-t border-border-custom">
+        <div className="flex items-baseline justify-between mb-12">
+          <h2 className="font-display text-2xl tracking-tight">Featured</h2>
+          <Link to="/products" className="text-sm text-text-muted hover:text-[#111111] border-b border-transparent hover:border-[#111111] transition-all">
+            See all
+          </Link>
         </div>
-        <div className="categories-grid">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              to={`/products?category=${encodeURIComponent(cat.id)}`}
-              className="cat-card"
-            >
-              <span className="cat-emoji">{cat.icon}</span>
-              <div className="cat-name">{cat.name}</div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <div className="features-strip">
-        <div className="features-inner">
-          {[
-            { icon: "shipping", title: "Free Shipping", desc: "On orders over $50" },
-            { icon: "secure", title: "Secure Payment", desc: "100% protected checkout" },
-            { icon: "returns", title: "Easy Returns", desc: "30-day return policy" },
-            { icon: "support", title: "24/7 Support", desc: "Always here to help" },
-          ].map((f) => (
-            <div key={f.title} className="feature-item">
-              <div>
-                <div className="feature-title">{f.title}</div>
-                <div className="feature-desc">{f.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* TRENDING */}
-      <section className="trending-section">
-        <div className="section-header">
-          <h2 className="section-title">Trending Now</h2>
-          <Link to="/products" className="section-link">See all</Link>
-        </div>
-        <div className="trending-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {trending.map((product) => (
-            <Link to={`/products/${product.id}`} key={product.id} className="trending-card">
-              <div className="trending-img">
-                <img src={product.image} alt={product.title} loading="lazy" />
+            <Link to={`/products/${product.id}`} key={product.id} className="group flex flex-col items-center">
+              <div className="aspect-[4/5] w-full bg-bg-soft flex items-center justify-center p-12 transition-all group-hover:bg-[#f0f0ed]">
+                <img src={product.image} alt={product.title} loading="lazy" className="max-h-full max-w-full object-contain mix-blend-multiply opacity-90 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="trending-body">
-                <div className="trending-category">{product.category}</div>
-                <div className="trending-name">{product.title}</div>
-                <div className="trending-footer">
-                  <span className="trending-price">${product.price}</span>
-                  <span className="trending-rating">{product.rating.rate} ({product.rating.count} reviews)</span>
-                </div>
+              <div className="mt-6 text-center w-full max-w-[280px]">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted mb-2">{product.category}</div>
+                <h3 className="font-medium text-sm text-[#111111] line-clamp-1 mb-2 px-4">{product.title}</h3>
+                <div className="font-display text-lg">${product.price}</div>
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* BANNER */}
-      <section className="banner-section">
-        <div className="banner">
-          <div className="banner-text">
-            <div className="banner-eyebrow">Limited Time Offer</div>
-            <div className="banner-title">Up to 40% off<br />on Electronics</div>
-            <div className="banner-sub">Shop now before the deals run out.</div>
-          </div>
-          <div className="banner-action">
-            <Link to="/products?category=electronics" className="btn btn-primary btn-lg">
-              Shop Electronics
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
