@@ -50,22 +50,21 @@ const Home = () => {
 
   return (
     <div className="overflow-x-hidden bg-white">
-      {/* HERO - Minimalist & Centered */}
+      {/* HERO */}
       <section className="max-w-[800px] mx-auto px-8 pt-32 pb-20 text-center">
         <h1 className="font-display text-5xl md:text-7xl leading-tight tracking-tight mb-8 text-[#111111]">
           Essential goods for <br />
           <span className="italic font-light">intentional living.</span>
         </h1>
         <p className="text-text-muted text-lg max-w-[500px] mx-auto mb-12 leading-relaxed font-light">
-          A curated selection of quality products across electronics, fashion, and jewelry.
+          E-commerce.
         </p>
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center">
           <Link to="/products" className="btn btn-primary btn-lg">Shop All</Link>
-          <Link to="/products?category=electronics" className="btn btn-outline btn-lg">New Arrivals</Link>
         </div>
       </section>
 
-      {/* CATEGORIES - Clean & Horizontal */}
+      {/* CATEGORIES */}
       <section className="max-w-[1280px] mx-auto px-8 py-20 border-t border-border-custom">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
           <h2 className="font-display text-2xl tracking-tight">Categories</h2>
@@ -83,7 +82,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* TRENDING - Clean Grid */}
+      {/* TRENDING */}
       <section className="max-w-[1280px] mx-auto px-8 py-24 border-t border-border-custom">
         <div className="flex items-baseline justify-between mb-12">
           <h2 className="font-display text-2xl tracking-tight">Featured</h2>
@@ -99,14 +98,13 @@ const Home = () => {
               </div>
               <div className="mt-6 text-center w-full max-w-[280px]">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted mb-2">{product.category}</div>
-                <h3 className="font-medium text-sm text-[#111111] line-clamp-1 mb-2 px-4">{product.title}</h3>
+                <h3 className="font-medium text-sm text-[#111111] mb-2 px-4">{product.title}</h3>
                 <div className="font-display text-lg">${product.price}</div>
               </div>
             </Link>
           ))}
         </div>
       </section>
-
     </div>
   );
 };
