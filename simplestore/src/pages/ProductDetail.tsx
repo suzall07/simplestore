@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { fetchProductById } from "../api";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { useCartStore } from "../store/cartStore";
 
 type Product = {
   id: number;
@@ -18,6 +19,9 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [added, setAdded] = useState(false);
+  
+  const addItem = useCartStore((state) => state.addItem);
 
   useEffect(() => {
     if (id) {
@@ -27,6 +31,14 @@ const ProductDetail = () => {
         .finally(() => setLoading(false));
     }
   }, [id]);
+
+  const handleAddToCart = () => {
+    if (product) {
+      addItem(product);
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    }
+  };
 
   if (loading) return <LoadingSpinner />;
 
@@ -52,11 +64,11 @@ const ProductDetail = () => {
         </div>
 
         {/* Info */}
-        <div className="max-w-[500px]">
+        <div className="max-w-[500px] mt-8 lg:mt-0">
           <nav className="flex gap-2 text-[10px] uppercase tracking-widest text-text-muted mb-8">
-            <Link to="/" className="hover:text-[#111111]">Home</Link>
+            <Link to="/" className="hover:text-[#FDFCFB]">Home</Link>
             <span>/</span>
-            <Link to="/products" className="hover:text-[#111111]">Products</Link>
+            <Link to="/products" className="hover:text-[#FDFCFB]">Products</Link>
             <span>/</span>
             <span className="text-[#111111]">{product.category}</span>
           </nav>
@@ -86,8 +98,15 @@ const ProductDetail = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="btn btn-primary btn-lg flex-1 justify-center py-4">
-              Add to Cart
+            <button 
+              onClick={handleAddToCart}
+              className={`btn btn-lg flex-1 justify-center py-4 transition-all ${
+                added 
+                ? 'bg-green-600 text-white pointer-events-none' 
+                : 'bg-[#C0A080] text-[#2D1E18] hover:bg-[#D0B090]'
+              }`}
+            >
+              {added ? '✓ Added' : 'Add to Cart'}
             </button>
             <Link to="/products" className="btn btn-outline btn-lg flex-1 justify-center py-4">
               Continue Shopping
