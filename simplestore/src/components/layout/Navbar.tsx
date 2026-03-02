@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useDebounce } from "../../hooks/useDebounce";
 import { useCartStore } from "../../store/cartStore";
+import { useAuthStore } from "../../store/authStore";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -9,11 +10,11 @@ const Navbar = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const totalItems = useCartStore((state) => state.totalItems());
+  const { token, logout } = useAuthStore();
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
 
-  // Sync searchQuery with URL q param changes
   useEffect(() => {
     const q = searchParams.get("q");
     if (q !== searchQuery && location.pathname === "/products") {
@@ -21,7 +22,6 @@ const Navbar = () => {
     }
   }, [searchParams, location.pathname, searchQuery]);
 
-  // Handle URL updates
   useEffect(() => {
     if (debouncedSearch) {
       const params = new URLSearchParams(searchParams);
@@ -90,7 +90,23 @@ const Navbar = () => {
             <span className="text-base">🛒</span>
             <span className="bg-[#C0A080] text-[#2D1E18] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{totalItems}</span>
           </Link>
-          <Link to="/login" className="px-5 py-2 rounded-custom bg-[#C0A080] text-[#2D1E18] text-sm font-medium hover:bg-[#D0B090] transition-colors">Login</Link>
+          
+          {token ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-[#FDFCFB] hidden md:inline">Hi, User</span>
+              <button 
+                onClick={logout}
+                className="px-5 py-2 rounded-custom bg-transparent border border-[#4D3B2F] text-[#FDFCFB] text-sm font-medium hover:bg-[#3D2B1F] transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link to="/login" className="px-5 py-2 rounded-custom bg-[#C0A080] text-[#2D1E18] text-sm font-medium hover:bg-[#D0B090] transition-colors">
+              Login
+            </Link>
+          )}
+          
           <button 
             className="flex md:hidden flex-col gap-1 p-1.5" 
             onClick={() => setOpen(!open)}
@@ -125,9 +141,22 @@ const Navbar = () => {
             <NavLink to="/cart" onClick={() => setOpen(false)} className="text-lg py-4 border-b border-[#3D2B1F] text-[#8D7B6F] hover:text-[#FDFCFB]">
               Cart
             </NavLink>
-            <NavLink to="/login" onClick={() => setOpen(false)} className="text-lg py-4 text-[#8D7B6F] hover:text-[#FDFCFB]">
-              Login
-            </NavLink>
+            
+            {token ? (
+              <button 
+                onClick={() => {
+                  logout();
+                  setOpen(false);
+                }}
+                className="text-lg py-4 text-left text-[#8D7B6F] hover:text-[#FDFCFB]"
+              >
+                Logout
+              </button>
+            ) : (
+              <NavLink to="/login" onClick={() => setOpen(false)} className="text-lg py-4 text-[#8D7B6F] hover:text-[#FDFCFB]">
+                Login
+              </NavLink>
+            )}
           </div>
         </div>
       )}
