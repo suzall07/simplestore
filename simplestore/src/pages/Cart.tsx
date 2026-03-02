@@ -75,9 +75,9 @@ const Cart = () => {
                 <span className="text-sm font-medium">Total</span>
                 <span className="text-2xl font-display text-[#111111]">${totalPrice().toFixed(2)}</span>
               </div>
-              <button className="btn btn-primary btn-lg w-full justify-center">
-                Checkout
-              </button>
+              <Link to="/checkout" className="btn btn-primary btn-lg w-full justify-center">
+                Proceed to Checkout
+              </Link>
             </div>
           </div>
         </div>

@@ -24,9 +24,8 @@ const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<'asc' | 'desc' | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -40,7 +39,7 @@ const Products = () => {
         if (catRes.status === "fulfilled") setCategories(catRes.value);
         if (prodRes.status === "fulfilled") {
           setProducts(prodRes.value);
-          setCurrentPage(1); // Reset to page 1 on category change
+          setCurrentPage(1);
         } else {
           setError("Failed to load products.");
         }
@@ -48,19 +47,29 @@ const Products = () => {
       .finally(() => setLoading(false));
   }, [selectedCategory]);
 
-  // Filter products based on URL search query
   const filteredProducts = useMemo(() => {
     return products.filter((product) =>
       product.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [products, searchQuery]);
 
-  // Pagination Logic
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const sortedAndFilteredProducts = useMemo(() => {
+    const sorted = filteredProducts.slice();
+    
+    if (sortBy === 'asc') {
+      sorted.sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'desc') {
+      sorted.sort((a, b) => b.price - a.price);
+    }
+    
+    return sorted;
+  }, [filteredProducts, sortBy]);
+
+  const totalPages = Math.ceil(sortedAndFilteredProducts.length / ITEMS_PER_PAGE);
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredProducts.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredProducts, currentPage]);
+    return sortedAndFilteredProducts.slice(start, start + ITEMS_PER_PAGE);
+  }, [sortedAndFilteredProducts, currentPage]);
 
   const handleCategoryClick = (id: string | null) => {
     setCurrentPage(1);
@@ -74,21 +83,19 @@ const Products = () => {
   };
 
   useEffect(() => {
-    setCurrentPage(1); // Reset to page 1 when search query changes
+    setCurrentPage(1);
   }, [searchQuery]);
 
   if (loading && products.length === 0) return <LoadingSpinner />;
 
   return (
     <div className="max-w-[1280px] mx-auto px-8 py-16">
-      {/* Header */}
       <div className="mb-16">
         <h1 className="font-display text-4xl mb-4 text-[#111111]">Shop</h1>
         <p className="text-text-muted font-light text-sm">Explore our collection of essentials.</p>
       </div>
 
       <div className="lg:flex gap-16">
-        {/* Sidebar / Filters */}
         <aside className="w-full lg:w-48 shrink-0 mb-12 lg:mb-0">
           <div className="sticky top-24">
             <h2 className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#111111] mb-6">Categories</h2>
@@ -115,7 +122,6 @@ const Products = () => {
           </div>
         </aside>
 
-        {/* Main Content / Grid */}
         <div className="flex-1">
           {error ? (
             <div className="text-center py-20">
@@ -125,7 +131,20 @@ const Products = () => {
           ) : (
             <>
               <div className="flex justify-between items-center mb-10">
-                <span className="text-xs text-text-muted font-light">{filteredProducts.length} items found</span>
+                <span className="text-xs text-text-muted font-light">{sortedAndFilteredProducts.length} items found</span>
+                
+                <div className="flex items-center gap-3">
+                  <label className="text-[10px] uppercase tracking-widest text-text-muted">Sort by</label>
+                  <select 
+                    value={sortBy || ''}
+                    onChange={(e) => setSortBy(e.target.value as 'asc' | 'desc' | null)}
+                    className="text-xs bg-transparent border border-border-custom rounded-custom px-3 py-1.5 focus:outline-none focus:border-[#111111]"
+                  >
+                    <option value="">Featured</option>
+                    <option value="asc">Price: Low to High</option>
+                    <option value="desc">Price: High to Low</option>
+                  </select>
+                </div>
               </div>
               
               {paginatedProducts.length > 0 ? (
@@ -153,7 +172,6 @@ const Products = () => {
                 </div>
               )}
 
-              {/* Pagination Controls */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-20 pt-10 border-t border-border-custom">
                   <button 
