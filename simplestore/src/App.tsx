@@ -10,6 +10,7 @@ const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Login = lazy(() => import("./pages/Login"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Checkout = lazy(() => import("./pages/Checkout"));
+const Profile = lazy(() => import("./pages/Profile"));
 
 function App() {
   return (
@@ -29,6 +30,11 @@ function App() {
             <Route path="checkout" element={
               <ProtectedRoute>
                 <Checkout />
+              </ProtectedRoute>
+            } />
+            <Route path="profile" element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             } />
           </Route>

@@ -141,6 +141,9 @@ const Navbar = () => {
             <NavLink to="/cart" onClick={() => setOpen(false)} className="text-lg py-4 border-b border-[#3D2B1F] text-[#8D7B6F] hover:text-[#FDFCFB]">
               Cart
             </NavLink>
+            <NavLink to="/profile" onClick={() => setOpen(false)} className="text-lg py-4 border-b border-[#3D2B1F] text-[#8D7B6F] hover:text-[#FDFCFB]">
+              Profile
+            </NavLink>
             
             {token ? (
               <button 

@@ -160,7 +160,7 @@ const Products = () => {
                       </div>
                       <div className="mt-5">
                         <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5">{product.category}</div>
-                        <h3 className="text-sm font-medium text-[#111111] line-clamp-1 group-hover:underline decoration-1 underline-offset-4 mb-2">{product.title}</h3>
+                        <h3 className="text-sm font-medium text-[#111111] group-hover:underline decoration-1 underline-offset-4 mb-2">{product.title}</h3>
                         <div className="font-display text-base">${product.price}</div>
                       </div>
                     </Link>

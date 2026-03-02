@@ -230,7 +230,7 @@ const Checkout = () => {
                     <img src={item.image} alt={item.title} className="max-h-full max-w-full object-contain" />
                   </div>
                   <div className="flex-1 text-xs">
-                    <div className="font-medium text-[#111111] line-clamp-1">{item.title}</div>
+                    <div className="font-medium text-[#111111]">{item.title}</div>
                     <div className="text-text-muted">Qty: {item.quantity}</div>
                   </div>
                   <div className="text-xs font-medium">${(item.price * item.quantity).toFixed(2)}</div>
