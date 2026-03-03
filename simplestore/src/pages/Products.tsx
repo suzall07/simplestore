@@ -1,7 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { fetchCategories, fetchAllProducts, fetchProductsByCategory } from "../api";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+import ProductCard from "../components/ProductCard";
 
 type Category = { id: string; name: string };
 type Product = {
@@ -45,7 +46,7 @@ const Products = () => {
         }
       })
       .finally(() => setLoading(false));
-  }, [selectedCategory]);
+  }, [selectedCategory, searchParams]);
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) =>
@@ -66,12 +67,13 @@ const Products = () => {
   }, [filteredProducts, sortBy]);
 
   const totalPages = Math.ceil(sortedAndFilteredProducts.length / ITEMS_PER_PAGE);
+  
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return sortedAndFilteredProducts.slice(start, start + ITEMS_PER_PAGE);
   }, [sortedAndFilteredProducts, currentPage]);
 
-  const handleCategoryClick = (id: string | null) => {
+  const handleCategoryClick = useCallback((id: string | null) => {
     setCurrentPage(1);
     const newParams = new URLSearchParams(searchParams);
     if (id) {
@@ -80,7 +82,23 @@ const Products = () => {
       newParams.delete("category");
     }
     setSearchParams(newParams);
-  };
+  }, [searchParams]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handlePrevPage = useCallback(() => {
+    setCurrentPage(p => Math.max(1, p - 1));
+  }, []);
+
+  const handleNextPage = useCallback(() => {
+    setCurrentPage(p => Math.min(totalPages, p + 1));
+  }, [totalPages]);
+
+  const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value as 'asc' | 'desc' | null);
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -137,7 +155,7 @@ const Products = () => {
                   <label className="text-[10px] uppercase tracking-widest text-text-muted">Sort by</label>
                   <select 
                     value={sortBy || ''}
-                    onChange={(e) => setSortBy(e.target.value as 'asc' | 'desc' | null)}
+                    onChange={handleSortChange}
                     className="text-xs bg-transparent border border-border-custom rounded-custom px-3 py-1.5 focus:outline-none focus:border-[#111111]"
                   >
                     <option value="">Featured</option>
@@ -150,20 +168,7 @@ const Products = () => {
               {paginatedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
                   {paginatedProducts.map((product) => (
-                    <Link to={`/products/${product.id}`} key={product.id} className="group">
-                      <div className="aspect-[4/5] bg-bg-soft flex items-center justify-center p-10 transition-colors group-hover:bg-[#f0f0ed]">
-                        <img 
-                          src={product.image} 
-                          alt={product.title} 
-                          className="max-h-full max-w-full object-contain mix-blend-multiply opacity-90 group-hover:opacity-100 transition-opacity" 
-                        />
-                      </div>
-                      <div className="mt-5">
-                        <div className="text-[10px] uppercase tracking-widest text-text-muted mb-1.5">{product.category}</div>
-                        <h3 className="text-sm font-medium text-[#111111] group-hover:underline decoration-1 underline-offset-4 mb-2">{product.title}</h3>
-                        <div className="font-display text-base">${product.price}</div>
-                      </div>
-                    </Link>
+                    <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
               ) : (
@@ -175,7 +180,7 @@ const Products = () => {
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-20 pt-10 border-t border-border-custom">
                   <button 
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    onClick={handlePrevPage}
                     disabled={currentPage === 1}
                     className="p-2 text-text-muted hover:text-[#111111] disabled:opacity-20 transition-opacity"
                   >
@@ -185,7 +190,7 @@ const Products = () => {
                   {[...Array(totalPages)].map((_, i) => (
                     <button
                       key={i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
+                      onClick={() => handlePageChange(i + 1)}
                       className={`w-8 h-8 text-xs rounded-full transition-colors ${
                         currentPage === i + 1 
                           ? 'bg-[#111111] text-white' 
@@ -197,7 +202,7 @@ const Products = () => {
                   ))}
 
                   <button 
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    onClick={handleNextPage}
                     disabled={currentPage === totalPages}
                     className="p-2 text-text-muted hover:text-[#111111] disabled:opacity-20 transition-opacity"
                   >

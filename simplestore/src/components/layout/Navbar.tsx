@@ -18,26 +18,25 @@ const Navbar = () => {
   useEffect(() => {
     const q = searchParams.get("q");
     if (q !== searchQuery && location.pathname === "/products") {
-       if (!q) setSearchQuery("");
+      setSearchQuery(q || "");
     }
-  }, [searchParams, location.pathname, searchQuery]);
+  }, [searchParams, location.pathname]);
 
   useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    
     if (debouncedSearch) {
-      const params = new URLSearchParams(searchParams);
       params.set("q", debouncedSearch);
-      
-      if (location.pathname !== "/products") {
-        navigate(`/products?${params.toString()}`);
-      } else {
-        navigate({ search: params.toString() }, { replace: true });
-      }
-    } else if (debouncedSearch === "" && searchQuery === "" && location.pathname === "/products") {
-      const params = new URLSearchParams(searchParams);
+    } else {
       params.delete("q");
-      navigate({ search: params.toString() }, { replace: true });
     }
-  }, [debouncedSearch, location.pathname, navigate, searchParams, searchQuery]);
+    
+    if (location.pathname === "/products") {
+      navigate(`/products?${params.toString()}`, { replace: true });
+    } else if (debouncedSearch) {
+      navigate(`/products?${params.toString()}`);
+    }
+  }, [debouncedSearch, navigate, location.pathname]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 h-[var(--navbar-h)] bg-[#2D1E18] border-b border-[#3D2B1F] z-[100] transition-colors duration-300">
