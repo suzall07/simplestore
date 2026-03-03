@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import api from '../api';
 import axios from 'axios';
 
 interface User {
@@ -17,8 +18,6 @@ interface AuthState {
   clearError: () => void;
 }
 
-const BASE_URL = 'https://fakestoreapi.com';
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -31,7 +30,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         
         try {
-          const response = await axios.post(`${BASE_URL}/auth/login`, {
+          const response = await api.post('/auth/login', {
             username,
             password
           });

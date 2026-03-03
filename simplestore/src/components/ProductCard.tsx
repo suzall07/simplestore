@@ -1,13 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-
-type Product = {
-  id: number;
-  title: string;
-  price: number;
-  category: string;
-  image: string;
-};
+import type { Product } from "../types";
 
 const ProductCard = memo(({ product }: { product: Product }) => {
   return (

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { Product } from '../types';
 
 export type CartItem = {
   id: number;
@@ -12,7 +13,7 @@ export type CartItem = {
 
 interface CartState {
   items: CartItem[];
-  addItem: (product: any) => void;
+  addItem: (product: Product) => void;
   removeItem: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
@@ -36,7 +37,16 @@ export const useCartStore = create<CartState>()(
               ),
             };
           }
-          return { items: [...state.items, { ...product, quantity: 1 }] };
+          return { 
+            items: [...state.items, { 
+              id: product.id, 
+              title: product.title, 
+              price: product.price, 
+              image: product.image, 
+              category: product.category, 
+              quantity: 1 
+            }] 
+          };
         });
       },
       removeItem: (id) => {

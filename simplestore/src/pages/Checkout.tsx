@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useCartStore } from "../store/cartStore";
+import { checkoutSchema, type CheckoutFormData } from "../lib/validations";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -8,28 +11,11 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    address: "",
-    city: "",
-    zipCode: "",
-    cardNumber: "",
-    cardName: "",
-    expiry: "",
-    cvv: ""
+  const { register, handleSubmit, formState: { errors } } = useForm<CheckoutFormData>({
+    resolver: zodResolver(checkoutSchema)
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = () => {
     setIsProcessing(true);
     
     setTimeout(() => {
@@ -73,7 +59,7 @@ const Checkout = () => {
 
       <div className="lg:grid lg:grid-cols-3 lg:gap-16">
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-10">
               <h2 className="text-[10px] uppercase tracking-[0.2em] font-medium text-[#111111] mb-6">Contact Information</h2>
               <div className="grid grid-cols-2 gap-4">
@@ -81,35 +67,35 @@ const Checkout = () => {
                   <label className="text-[10px] uppercase tracking-widest text-text-muted">First Name</label>
                   <input
                     type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    required
+                    {...register("firstName")}
                     className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] text-sm"
                   />
+                  {errors.firstName && (
+                    <p className="text-xs text-red-500 mt-1">{errors.firstName.message}</p>
+                  )}
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] uppercase tracking-widest text-text-muted">Last Name</label>
                   <input
                     type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    required
+                    {...register("lastName")}
                     className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] text-sm"
                   />
+                  {errors.lastName && (
+                    <p className="text-xs text-red-500 mt-1">{errors.lastName.message}</p>
+                  )}
                 </div>
               </div>
               <div className="mt-4 flex flex-col gap-2">
                 <label className="text-[10px] uppercase tracking-widest text-text-muted">Email</label>
                 <input
                   type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
+                  {...register("email")}
                   className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] text-sm"
                 />
+                {errors.email && (
+                  <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+                )}
               </div>
             </div>
 
@@ -120,35 +106,35 @@ const Checkout = () => {
                   <label className="text-[10px] uppercase tracking-widest text-text-muted">Address</label>
                   <input
                     type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    required
+                    {...register("address")}
                     className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] text-sm"
                   />
+                  {errors.address && (
+                    <p className="text-xs text-red-500 mt-1">{errors.address.message}</p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] uppercase tracking-widest text-text-muted">City</label>
                     <input
                       type="text"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      required
+                      {...register("city")}
                       className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] text-sm"
                     />
+                    {errors.city && (
+                      <p className="text-xs text-red-500 mt-1">{errors.city.message}</p>
+                    )}
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] uppercase tracking-widest text-text-muted">ZIP Code</label>
                     <input
                       type="text"
-                      name="zipCode"
-                      value={formData.zipCode}
-                      onChange={handleChange}
-                      required
+                      {...register("zipCode")}
                       className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] text-sm"
                     />
+                    {errors.zipCode && (
+                      <p className="text-xs text-red-500 mt-1">{errors.zipCode.message}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -161,49 +147,49 @@ const Checkout = () => {
                   <label className="text-[10px] uppercase tracking-widest text-text-muted">Card Number</label>
                   <input
                     type="text"
-                    name="cardNumber"
-                    value={formData.cardNumber}
-                    onChange={handleChange}
-                    required
+                    {...register("cardNumber")}
                     placeholder="**** **** **** ****"
                     className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] text-sm"
                   />
+                  {errors.cardNumber && (
+                    <p className="text-xs text-red-500 mt-1">{errors.cardNumber.message}</p>
+                  )}
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-[10px] uppercase tracking-widest text-text-muted">Name on Card</label>
                   <input
                     type="text"
-                    name="cardName"
-                    value={formData.cardName}
-                    onChange={handleChange}
-                    required
+                    {...register("cardName")}
                     className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] text-sm"
                   />
+                  {errors.cardName && (
+                    <p className="text-xs text-red-500 mt-1">{errors.cardName.message}</p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] uppercase tracking-widest text-text-muted">Expiry</label>
                     <input
                       type="text"
-                      name="expiry"
-                      value={formData.expiry}
-                      onChange={handleChange}
-                      required
+                      {...register("expiry")}
                       placeholder="MM/YY"
                       className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] text-sm"
                     />
+                    {errors.expiry && (
+                      <p className="text-xs text-red-500 mt-1">{errors.expiry.message}</p>
+                    )}
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] uppercase tracking-widest text-text-muted">CVV</label>
                     <input
                       type="text"
-                      name="cvv"
-                      value={formData.cvv}
-                      onChange={handleChange}
-                      required
+                      {...register("cvv")}
                       placeholder="***"
                       className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] text-sm"
                     />
+                    {errors.cvv && (
+                      <p className="text-xs text-red-500 mt-1">{errors.cvv.message}</p>
+                    )}
                   </div>
                 </div>
               </div>

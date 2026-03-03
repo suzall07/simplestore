@@ -1,21 +1,22 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "../store/authStore";
+import { loginSchema, type LoginFormData } from "../lib/validations";
 
 const Login = () => {
   const navigate = useNavigate();
   const { login, isLoading, error, clearError } = useAuthStore();
   
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema)
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginFormData) => {
     clearError();
-    
-    const success = await login(username, password);
+    const success = await login(data.username, data.password);
     if (success) {
-      navigate("/"); // Redirect to home after successful login
+      navigate("/");
     }
   };
 
@@ -35,7 +36,7 @@ const Login = () => {
           </div>
         )}
 
-        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-2">
             <label htmlFor="username" className="text-[10px] uppercase tracking-widest text-[#111111] font-medium">
               Username
@@ -44,11 +45,12 @@ const Login = () => {
               id="username"
               type="text" 
               placeholder="mor_2314"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
+              {...register("username")}
               className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] transition-colors text-sm font-light"
             />
+            {errors.username && (
+              <p className="text-xs text-red-500 mt-1">{errors.username.message}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -61,11 +63,12 @@ const Login = () => {
               id="password"
               type="password" 
               placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              {...register("password")}
               className="w-full px-4 py-3 border border-border-custom rounded-custom focus:outline-none focus:border-[#111111] transition-colors text-sm font-light"
             />
+            {errors.password && (
+              <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+            )}
           </div>
 
           <button 
@@ -76,15 +79,6 @@ const Login = () => {
             {isLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
-        <div className="mt-8 text-center">
-          <p className="text-sm text-text-muted font-light">
-            Don't have an account?{" "}
-            <button className="text-[#111111] font-medium hover:underline underline-offset-4">
-              Create one
-            </button>
-          </p>
-        </div>
       </div>
     </div>
   );

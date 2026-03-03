@@ -1,18 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { useSearchParams, Link } from "react-router-dom";
-import { fetchCategories, fetchAllProducts, fetchProductsByCategory } from "../api";
-import LoadingSpinner from "../components/ui/LoadingSpinner";
+import { useState, useMemo, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useProductsQuery, useCategoriesQuery } from "../hooks/useProductsQuery";
 import ProductCard from "../components/ProductCard";
-
-type Category = { id: string; name: string };
-type Product = {
-  id: number;
-  title: string;
-  price: number;
-  category: string;
-  image: string;
-  rating: { rate: number; count: number };
-};
+import ProductsSkeleton from "../components/ProductsSkeleton";
+import type { Category, Product } from "../types";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -21,35 +12,15 @@ const Products = () => {
   const selectedCategory = searchParams.get("category");
   const searchQuery = searchParams.get("q") || "";
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'asc' | 'desc' | null>(null);
-
-  useEffect(() => {
-    setLoading(true);
-    const categoryPromise = fetchCategories();
-    const productsPromise = selectedCategory 
-      ? fetchProductsByCategory(selectedCategory) 
-      : fetchAllProducts();
-
-    Promise.allSettled([categoryPromise, productsPromise])
-      .then(([catRes, prodRes]) => {
-        if (catRes.status === "fulfilled") setCategories(catRes.value);
-        if (prodRes.status === "fulfilled") {
-          setProducts(prodRes.value);
-          setCurrentPage(1);
-        } else {
-          setError("Failed to load products.");
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [selectedCategory, searchParams]);
+  
+  const { data: products = [], isLoading, error } = useProductsQuery(selectedCategory);
+  const { data: categories = [] } = useCategoriesQuery();
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) =>
+    if (!searchQuery) return products;
+    return products.filter((product: Product) =>
       product.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [products, searchQuery]);
@@ -58,9 +29,9 @@ const Products = () => {
     const sorted = filteredProducts.slice();
     
     if (sortBy === 'asc') {
-      sorted.sort((a, b) => a.price - b.price);
+      sorted.sort((a: Product, b: Product) => a.price - b.price);
     } else if (sortBy === 'desc') {
-      sorted.sort((a, b) => b.price - a.price);
+      sorted.sort((a: Product, b: Product) => b.price - a.price);
     }
     
     return sorted;
@@ -100,11 +71,8 @@ const Products = () => {
     setSortBy(e.target.value as 'asc' | 'desc' | null);
   }, []);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
-  if (loading && products.length === 0) return <LoadingSpinner />;
+  if (isLoading) return <ProductsSkeleton />;
+  if (error) return <div>Error loading products</div>;
 
   return (
     <div className="max-w-[1280px] mx-auto px-8 py-16">
@@ -126,7 +94,7 @@ const Products = () => {
                   All Products
                 </button>
               </li>
-              {categories.map((cat) => (
+              {categories.map((cat: Category) => (
                 <li key={cat.id}>
                   <button 
                     onClick={() => handleCategoryClick(cat.id)}
@@ -141,77 +109,70 @@ const Products = () => {
         </aside>
 
         <div className="flex-1">
-          {error ? (
-            <div className="text-center py-20">
-              <p className="text-text-muted mb-4">{error}</p>
-              <button onClick={() => window.location.reload()} className="btn btn-outline">Retry</button>
-            </div>
-          ) : (
-            <>
-              <div className="flex justify-between items-center mb-10">
-                <span className="text-xs text-text-muted font-light">{sortedAndFilteredProducts.length} items found</span>
-                
-                <div className="flex items-center gap-3">
-                  <label className="text-[10px] uppercase tracking-widest text-text-muted">Sort by</label>
-                  <select 
-                    value={sortBy || ''}
-                    onChange={handleSortChange}
-                    className="text-xs bg-transparent border border-border-custom rounded-custom px-3 py-1.5 focus:outline-none focus:border-[#111111]"
-                  >
-                    <option value="">Featured</option>
-                    <option value="asc">Price: Low to High</option>
-                    <option value="desc">Price: High to Low</option>
-                  </select>
-                </div>
-              </div>
+          <>
+            <div className="flex justify-between items-center mb-10">
+              <span className="text-xs text-text-muted font-light">{sortedAndFilteredProducts.length} items found</span>
               
-              {paginatedProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
-                  {paginatedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-20 text-text-muted font-light italic">
-                  No products match your search.
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                <label className="text-[10px] uppercase tracking-widest text-text-muted">Sort by</label>
+                <select 
+                  value={sortBy || ''}
+                  onChange={handleSortChange}
+                  className="text-xs bg-transparent border border-border-custom rounded-custom px-3 py-1.5 focus:outline-none focus:border-[#111111]"
+                >
+                  <option value="">Featured</option>
+                  <option value="asc">Price: Low to High</option>
+                  <option value="desc">Price: High to Low</option>
+                </select>
+              </div>
+            </div>
+            
+            {paginatedProducts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
+                {paginatedProducts.map((product: Product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 text-text-muted font-light italic">
+                No products match your search.
+              </div>
+            )}
 
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-20 pt-10 border-t border-border-custom">
-                  <button 
-                    onClick={handlePrevPage}
-                    disabled={currentPage === 1}
-                    className="p-2 text-text-muted hover:text-[#111111] disabled:opacity-20 transition-opacity"
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-20 pt-10 border-t border-border-custom">
+                <button 
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className="p-2 text-text-muted hover:text-[#111111] disabled:opacity-20 transition-opacity"
+                >
+                  ←
+                </button>
+                
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => handlePageChange(i + 1)}
+                    className={`w-8 h-8 text-xs rounded-full transition-colors ${
+                      currentPage === i + 1 
+                        ? 'bg-[#111111] text-white' 
+                        : 'text-text-muted hover:bg-bg-soft hover:text-[#111111]'
+                    }`}
                   >
-                    ←
+                    {i + 1}
                   </button>
-                  
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => handlePageChange(i + 1)}
-                      className={`w-8 h-8 text-xs rounded-full transition-colors ${
-                        currentPage === i + 1 
-                          ? 'bg-[#111111] text-white' 
-                          : 'text-text-muted hover:bg-bg-soft hover:text-[#111111]'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                ))}
 
-                  <button 
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages}
-                    className="p-2 text-text-muted hover:text-[#111111] disabled:opacity-20 transition-opacity"
-                  >
-                    →
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+                <button 
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="p-2 text-text-muted hover:text-[#111111] disabled:opacity-20 transition-opacity"
+                >
+                  →
+                </button>
+              </div>
+            )}
+          </>
         </div>
       </div>
     </div>

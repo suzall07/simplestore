@@ -1,47 +1,17 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { fetchCategories, fetchTrendingProducts } from "../api";
-import LoadingSpinner from "../components/ui/LoadingSpinner";
-
-type Category = { id: string; name: string; };
-type Product = {
-  id: number;
-  title: string;
-  price: number;
-  category: string;
-  rating: { rate: number; count: number };
-  image: string;
-};
+import { useCategoriesQuery, useTrendingProductsQuery } from "../hooks/useProductsQuery";
+import HomeSkeleton from "../components/HomeSkeleton";
+import type { Category, Product } from "../types";
 
 const Home = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [trending, setTrending] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useCategoriesQuery();
+  const { data: trending = [], isLoading: trendingLoading, error: trendingError } = useTrendingProductsQuery();
 
-  useEffect(() => {
-    Promise.allSettled([fetchCategories(), fetchTrendingProducts()])
-      .then(([categoriesResult, trendingResult]) => {
-        if (categoriesResult.status === "fulfilled") {
-          setCategories(categoriesResult.value);
-        } else {
-          setError("Failed to load categories.");
-        }
+  if (categoriesLoading || trendingLoading) return <HomeSkeleton />;
 
-        if (trendingResult.status === "fulfilled") {
-          setTrending(trendingResult.value);
-        } else {
-          setError("Failed to load trending products.");
-        }
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <LoadingSpinner />;
-
-  if (error) return (
+  if (categoriesError || trendingError) return (
     <div className="text-center p-16">
-      <p>{error}</p>
+      <p>Failed to load data.</p>
       <button onClick={() => window.location.reload()} className="btn btn-primary mt-4">
         Retry
       </button>
@@ -50,7 +20,6 @@ const Home = () => {
 
   return (
     <div className="overflow-x-hidden bg-white">
-      {/* HERO */}
       <section className="max-w-[800px] mx-auto px-8 pt-32 pb-20 text-center">
         <h1 className="font-display text-5xl md:text-7xl leading-tight tracking-tight mb-8 text-[#111111]">
           Essential goods for <br />
@@ -64,12 +33,11 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CATEGORIES */}
       <section className="max-w-[1280px] mx-auto px-8 py-20 border-t border-border-custom">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
           <h2 className="font-display text-2xl tracking-tight">Categories</h2>
           <div className="flex flex-wrap gap-x-8 gap-y-4">
-            {categories.map((cat) => (
+            {categories.map((cat: Category) => (
               <Link
                 key={cat.id}
                 to={`/products?category=${encodeURIComponent(cat.id)}`}
@@ -82,7 +50,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* TRENDING */}
       <section className="max-w-[1280px] mx-auto px-8 py-24 border-t border-border-custom">
         <div className="flex items-baseline justify-between mb-12">
           <h2 className="font-display text-2xl tracking-tight">Featured</h2>
@@ -91,7 +58,7 @@ const Home = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          {trending.map((product) => (
+          {trending.map((product: Product) => (
             <Link to={`/products/${product.id}`} key={product.id} className="group flex flex-col items-center">
               <div className="aspect-[4/5] w-full bg-bg-soft flex items-center justify-center p-12 transition-all group-hover:bg-[#f0f0ed]">
                 <img src={product.image} alt={product.title} loading="lazy" className="max-h-full max-w-full object-contain mix-blend-multiply opacity-90 group-hover:opacity-100 transition-opacity" />
