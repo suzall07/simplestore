@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,15 +15,26 @@ const Checkout = () => {
     resolver: zodResolver(checkoutSchema)
   });
 
+  const timer1 = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timer2 = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up timers if the component unmounts mid-checkout
+  useEffect(() => {
+    return () => {
+      if (timer1.current) clearTimeout(timer1.current);
+      if (timer2.current) clearTimeout(timer2.current);
+    };
+  }, []);
+
   const onSubmit = () => {
     setIsProcessing(true);
-    
-    setTimeout(() => {
+
+    timer1.current = setTimeout(() => {
       setIsProcessing(false);
       setIsComplete(true);
       clearCart();
-      
-      setTimeout(() => {
+
+      timer2.current = setTimeout(() => {
         navigate("/");
       }, 3000);
     }, 2000);

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useProductsQuery, useCategoriesQuery } from "../hooks/useProductsQuery";
 import ProductCard from "../components/ProductCard";
@@ -17,6 +17,11 @@ const Products = () => {
   
   const { data: products = [], isLoading, error } = useProductsQuery(selectedCategory);
   const { data: categories = [] } = useCategoriesQuery();
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const filteredProducts = useMemo(() => {
     if (!searchQuery) return products;
@@ -69,6 +74,7 @@ const Products = () => {
 
   const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setSortBy(e.target.value as 'asc' | 'desc' | null);
+    setCurrentPage(1); // reset to page 1 on sort change
   }, []);
 
   if (isLoading) return <ProductsSkeleton />;

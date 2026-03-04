@@ -55,11 +55,17 @@ export const useCartStore = create<CartState>()(
         }));
       },
       updateQuantity: (id, quantity) => {
-        set((state) => ({
-          items: state.items.map((item) =>
-            item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-          ),
-        }));
+        if (quantity <= 0) {
+          set((state) => ({
+            items: state.items.filter((item) => item.id !== id),
+          }));
+        } else {
+          set((state) => ({
+            items: state.items.map((item) =>
+              item.id === id ? { ...item, quantity } : item
+            ),
+          }));
+        }
       },
       clearCart: () => set({ items: [] }),
       totalItems: () => {

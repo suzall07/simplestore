@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useDebounce } from "../../hooks/useDebounce";
 import { useCartStore } from "../../store/cartStore";
@@ -14,30 +14,40 @@ const Navbar = () => {
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const prevDebouncedSearch = useRef(debouncedSearch);
 
+  // Sync search input when URL param changes externally (e.g. browser back/forward)
   useEffect(() => {
     const q = searchParams.get("q");
     if (q !== searchQuery && location.pathname === "/products") {
       setSearchQuery(q || "");
     }
-  
   }, [searchParams, location.pathname]);
 
+  // Only navigate when the user has actively typed a new search term
   useEffect(() => {
+    const prev = prevDebouncedSearch.current;
+    prevDebouncedSearch.current = debouncedSearch;
+
+    // If the debounced value hasn't changed, don't navigate
+    // (this avoids bouncing back when the user clicks into a product detail page)
+    if (debouncedSearch === prev) return;
+
     const params = new URLSearchParams(searchParams);
-    
     if (debouncedSearch) {
       params.set("q", debouncedSearch);
     } else {
       params.delete("q");
     }
-    
+
     if (location.pathname === "/products") {
       navigate(`/products?${params.toString()}`, { replace: true });
     } else if (debouncedSearch) {
       navigate(`/products?${params.toString()}`);
+    } else {
+      // cleared the search while not on /products — no redirect needed
     }
-  }, [debouncedSearch, navigate, location.pathname]);
+  }, [debouncedSearch]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 h-[var(--navbar-h)] bg-brand-brown border-b border-brand-border z-[100] transition-colors duration-300">
